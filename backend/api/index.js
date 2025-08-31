@@ -1,77 +1,39 @@
-// api/index.js
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser()); // refresh 토큰 읽을 때 필요
 
-app.use(
-  cors({
-    origin: [/^http:\/\/localhost(:\d+)?$/, /^https:\/\/.*\.vercel\.app$/],
-    credentials: true,
-  })
-);
+// 프론트 실제 도메인만 화이트리스트로 허용
+const allowlist = [
+  "http://localhost:5173",
+  // 프리뷰/프로덕션 vercel 프론트 도메인들 (정확한 값 추가)
+  "https://mern-book-frontend-h4udn81t0-leejaeohs-projects-3147e6a4.vercel.app",
+  "https://mern-book-frontend-roan.vercel.app",
+];
 
-// --- Mongo (생략 가능) --- //
-let cached =
-  global.mongoose || (global.mongoose = { conn: null, promise: null });
-async function connectMongo() {
-  if (cached.conn) return cached.conn;
-  if (!cached.promise) {
-    const url = process.env.DB_URL;
-    if (!url) throw new Error("Missing env DB_URL");
-    cached.promise = mongoose
-      .connect(url, { dbName: "bookstore" })
-      .then((m) => m);
-  }
-  cached.conn = await cached.promise;
-  return cached.conn;
-}
-app.use(async (_req, res, next) => {
-  try {
-    await connectMongo();
-    next();
-  } catch (e) {
-    console.error("Mongo connect error:", e);
-    res.status(500).json({ error: "db_connect_failed" });
-  }
-});
-
-// --- 헬스체크 --- //
-app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
-
-// ---- 라우트 장착 (backend 루트를 기준) ----
-const ROOT = path.join(__dirname, ".."); // ← api/.. => backend
-
-function mount(mountPath, relToRoot) {
-  try {
-    const abs = path.resolve(ROOT, relToRoot);
-    const candidate = fs.existsSync(abs + ".js") ? abs + ".js" : abs;
-    console.log(
-      "[mount]",
-      mountPath,
-      "->",
-      candidate,
-      "exists?",
-      fs.existsSync(candidate)
-    );
-    app.use(mountPath, require(candidate));
-  } catch (e) {
-    console.error("Route load error:", mountPath, relToRoot, e);
-    app.get(mountPath, (_req, res) =>
-      res.status(404).json({ error: "route_load_failed", mountPath, relToRoot })
-    );
-  }
+// origin 검사 함수
+function isAllowed(origin) {
+  if (!origin) return true; // curl/Postman 등의 경우
+  return allowlist.some((o) => o === origin);
 }
 
-// 실제 구조가 backend/src/* 라면 이 4줄만 사용
-mount("/api/books", "src/books/book.route");
-mount("/api/orders", "src/orders/order.route");
-mount("/api/auth", "src/users/user.route");
-mount("/api/admin", "src/stats/admin.stats");
+const corsOptions = {
+  origin(origin, cb) {
+    if (isAllowed(origin)) return cb(null, true);
+    return cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400, // 프리플라이트 캐시
+};
 
-// 마지막 한 줄만 export
-module.exports = (req, res) => app(req, res);
+app.use(cors(corsOptions));
+// 프리플라이트 직접 허용
+app.options("*", cors(corsOptions));
