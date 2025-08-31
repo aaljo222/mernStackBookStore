@@ -58,11 +58,11 @@ function mount(mountPath, relToRoot) {
 }
 
 app.use("/api/auth", require(path.join(ROOT, "src/users/user.route")));
+app.use("/api/books", require(path.join(ROOT, "src/books/book.route")));
+app.use("/api/orders", require(path.join(ROOT, "src/orders/order.route")));
+app.use("/api/admin", require(path.join(ROOT, "src/stats/admin.stats")));
 
-// 필요하면 나머지도
-mount("/api/books", "src/books/book.route");
-mount("/api/orders", "src/orders/order.route");
-mount("/api/admin", "src/stats/admin.stats");
+app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
 // Vercel serverless 핸들러
 module.exports = (req, res) => app(req, res);
