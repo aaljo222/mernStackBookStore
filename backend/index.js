@@ -34,8 +34,9 @@ app.options("*", cors(corsOptions));
 // 🔗 Mongo 연결(1회만)
 let mongoReady;
 async function ensureMongo() {
-  if (!mongoReady) mongoReady = mongoose.connect(process.env.DB_URL);\
-  console.log("db 연결완료")
+  console.log("db 연결하기전 !");
+  if (!mongoReady) mongoReady = mongoose.connect(process.env.DB_URL);
+  console.log("db 연결완료");
   return mongoReady;
 }
 app.use(async (_req, _res, next) => {
