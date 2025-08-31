@@ -9,7 +9,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://mern-stack-book-store-feu5.vercel.app",
+      "mern-book-frontend-gh40vtoi9-leejaeohs-projects-3147e6a4.vercel.app",
     ],
     credentials: true,
   })
@@ -28,11 +28,12 @@ app.use(async (_req, _res, next) => {
   next();
 });
 
-// 라우트
-app.use("/api/books", require("../functions/src/books/book.route")); // 경로는 실제 위치대로
-app.use("/api/orders", require("../functions/src/orders/order.route"));
-app.use("/api/auth", require("../functions/src/users/user.route"));
-app.use("/api/admin", require("../functions/src/stats/admin.stats"));
+app.use("/api/books", require("./src/books/book.route"));
+app.use("/api/orders", require("./src/orders/order.route"));
+app.use("/api/auth", require("./src/users/user.route"));
+app.use("/api/admin", require("./src/stats/admin.stats"));
 
-// Vercel Serverless로 내보내기
-module.exports = (req, res) => app(req, res);
+// 헬스체크
+app.get("/api/health", (_req, res) => res.send("ok"));
+
+module.exports = app; // ← Vercel serverless
