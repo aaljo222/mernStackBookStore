@@ -3,7 +3,7 @@ const User = require("../../models/User");
 const { signAccess, signRefresh, verify } = require("../../utils/jwt");
 
 // 회원가입
-router.post("/register", async (req, res) => {
+router.post("/api/auth/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
     if (!email || !password)
@@ -33,7 +33,7 @@ router.post("/register", async (req, res) => {
 });
 
 // 로그인
-router.post("/login", async (req, res) => {
+router.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user || !(await user.comparePassword(password)))
