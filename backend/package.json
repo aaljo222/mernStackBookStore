@@ -1,8 +1,8 @@
 {
   "private": true,
-  "engines": {
-    "node": "20.x"
-  },
+ {
+  "engines": { "node": "18.x" }
+},
   "dependencies": {
     "express": "^4",
     "cors": "^2",
