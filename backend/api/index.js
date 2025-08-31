@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const path = require("path");
-const fs = require("fs");
 
 const app = express();
 app.use(express.json());
@@ -48,21 +46,11 @@ app.options("*", cors(corsOptions));
 // 헬스체크
 app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
-// ---- 라우트 마운트 (backend 루트 기준) ----
-const ROOT = path.join(__dirname, ".."); // api/.. => backend
-
-function mount(mountPath, relToRoot) {
-  const abs = path.resolve(ROOT, relToRoot);
-  const candidate = fs.existsSync(abs + ".js") ? abs + ".js" : abs;
-  app.use(mountPath, require(candidate));
-}
-
-app.use("/api/auth", require(path.join(ROOT, "src/users/user.route")));
-app.use("/api/books", require(path.join(ROOT, "src/books/book.route")));
-app.use("/api/orders", require(path.join(ROOT, "src/orders/order.route")));
-app.use("/api/admin", require(path.join(ROOT, "src/stats/admin.stats")));
-
-app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
+// backend/api/index.js 내부
+safeMount("/api/auth", "src/users/user.route.js");
+safeMount("/api/books", "src/books/book.route.js");
+safeMount("/api/orders", "src/orders/order.route.js");
+safeMount("/api/admin", "src/stats/admin.stats.js");
 
 // Vercel serverless 핸들러
 module.exports = (req, res) => app(req, res);
