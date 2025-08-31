@@ -1,9 +1,10 @@
+// src/users/user.route.js
 const router = require("express").Router();
 const User = require("../../models/User");
 const { signAccess, signRefresh, verify } = require("../../utils/jwt");
 
-// 회원가입
-router.post("/api/auth/register", async (req, res) => {
+// ✅ 상대 경로만 사용
+router.post("/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
     if (!email || !password)
@@ -15,7 +16,7 @@ router.post("/api/auth/register", async (req, res) => {
     const user = await User.create({ email, password, name });
     const access = signAccess({ id: user._id, email, role: user.role });
     const refresh = signRefresh({ id: user._id });
-    // httpOnly 쿠키에 refresh 저장 (권장)
+
     res.cookie("refresh", refresh, {
       httpOnly: true,
       secure: true,
@@ -23,6 +24,7 @@ router.post("/api/auth/register", async (req, res) => {
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
     res.json({
       accessToken: access,
       user: { id: user._id, email, name, role: user.role },
@@ -32,8 +34,7 @@ router.post("/api/auth/register", async (req, res) => {
   }
 });
 
-// 로그인
-router.post("/api/auth/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user || !(await user.comparePassword(password)))
@@ -41,6 +42,7 @@ router.post("/api/auth/login", async (req, res) => {
 
   const access = signAccess({ id: user._id, email, role: user.role });
   const refresh = signRefresh({ id: user._id });
+
   res.cookie("refresh", refresh, {
     httpOnly: true,
     secure: true,
@@ -48,13 +50,13 @@ router.post("/api/auth/login", async (req, res) => {
     path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+
   res.json({
     accessToken: access,
     user: { id: user._id, email, name: user.name, role: user.role },
   });
 });
 
-// 토큰 재발급
 router.post("/refresh", async (req, res) => {
   const token = req.cookies?.refresh;
   if (!token) return res.status(401).json({ error: "no_refresh" });
@@ -62,6 +64,7 @@ router.post("/refresh", async (req, res) => {
     const decoded = await verify(token, process.env.JWT_REFRESH_SECRET);
     const user = await User.findById(decoded.id).lean();
     if (!user) return res.status(401).json({ error: "invalid_refresh" });
+
     const access = signAccess({
       id: user._id,
       email: user.email,
@@ -73,7 +76,6 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
-// 로그아웃
 router.post("/logout", (req, res) => {
   res.clearCookie("refresh", { path: "/" });
   res.json({ ok: true });

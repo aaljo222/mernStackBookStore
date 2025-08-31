@@ -1,26 +1,33 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 const path = require("path");
 const fs = require("fs");
-const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(express.json());
-app.use(cookieParser()); // refresh 토큰 읽을 때 필요
+app.use(cookieParser());
 
-// 프론트 실제 도메인만 화이트리스트로 허용
-const allowlist = [
-  "http://localhost:5173",
-  // 프리뷰/프로덕션 vercel 프론트 도메인들 (정확한 값 추가)
-  "https://mern-book-frontend-h4udn81t0-leejaeohs-projects-3147e6a4.vercel.app",
-  "https://mern-book-frontend-roan.vercel.app",
-];
-
-// origin 검사 함수
+// CORS 허용 판별 함수
 function isAllowed(origin) {
-  if (!origin) return true; // curl/Postman 등의 경우
-  return allowlist.some((o) => o === origin);
+  if (!origin) return true; // Postman, curl 등
+  try {
+    const u = new URL(origin);
+    // 로컬
+    if (u.origin === "http://localhost:5173") return true;
+    // 프로덕션 고정 도메인(있다면)
+    if (u.origin === "https://mern-book-frontend-roan.vercel.app") return true;
+    // ✅ 동일 프로젝트의 Vercel 프리뷰 전부 허용
+    if (
+      u.hostname.startsWith("mern-book-frontend-") &&
+      u.hostname.endsWith(".vercel.app")
+    ) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 const corsOptions = {
@@ -31,9 +38,32 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400, // 프리플라이트 캐시
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
-// 프리플라이트 직접 허용
+// 프리플라이트 처리
 app.options("*", cors(corsOptions));
+
+// 헬스체크
+app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
+// ---- 라우트 마운트 (backend 루트 기준) ----
+const ROOT = path.join(__dirname, ".."); // api/.. => backend
+
+function mount(mountPath, relToRoot) {
+  const abs = path.resolve(ROOT, relToRoot);
+  const candidate = fs.existsSync(abs + ".js") ? abs + ".js" : abs;
+  app.use(mountPath, require(candidate));
+}
+
+// ✅ Auth 라우터는 내부 경로를 상대경로(`/register` 등)로 작성해두세요.
+mount("/api/auth", "src/users/user.route");
+
+// 필요하면 나머지도
+mount("/api/books", "src/books/book.route");
+mount("/api/orders", "src/orders/order.route");
+mount("/api/admin", "src/stats/admin.stats");
+
+// Vercel serverless 핸들러
+module.exports = (req, res) => app(req, res);
