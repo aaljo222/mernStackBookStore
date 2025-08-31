@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "mongoose": "^8.7.0"
+  }
+}
