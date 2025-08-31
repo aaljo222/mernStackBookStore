@@ -57,8 +57,7 @@ function mount(mountPath, relToRoot) {
   app.use(mountPath, require(candidate));
 }
 
-// ✅ Auth 라우터는 내부 경로를 상대경로(`/register` 등)로 작성해두세요.
-mount("/api/auth", "src/users/user.route");
+app.use("/api/auth", require(path.join(ROOT, "src/users/user.route")));
 
 // 필요하면 나머지도
 mount("/api/books", "src/books/book.route");
