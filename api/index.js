@@ -7,7 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://<YOUR-FRONT>.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://mern-stack-book-store-feu5.vercel.app",
+    ],
     credentials: true,
   })
 );
@@ -31,4 +34,5 @@ app.use("/api/orders", require("../functions/src/orders/order.route"));
 app.use("/api/auth", require("../functions/src/users/user.route"));
 app.use("/api/admin", require("../functions/src/stats/admin.stats"));
 
-module.exports = app; // Vercel serverless는 default export가 app이면 OK
+// Vercel Serverless로 내보내기
+module.exports = (req, res) => app(req, res);
