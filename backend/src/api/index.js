@@ -43,13 +43,13 @@ app.use(async (_req, res, next) => {
 // --- 헬스체크 --- //
 app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
-// ---- 라우트 장착 (프로젝트 루트 기준) ---- //
-const ROOT = process.cwd();
+// ---- 라우트 장착 (backend 루트를 기준) ----
+const ROOT = path.join(__dirname, ".."); // ← api/.. => backend
 
 function mount(mountPath, relToRoot) {
   try {
     const abs = path.resolve(ROOT, relToRoot);
-    const candidate = fs.existsSync(abs + ".js") ? abs + ".js" : abs; // 확장자 유연 처리
+    const candidate = fs.existsSync(abs + ".js") ? abs + ".js" : abs;
     console.log(
       "[mount]",
       mountPath,
@@ -67,18 +67,11 @@ function mount(mountPath, relToRoot) {
   }
 }
 
-// 👉 실제 폴더 구조에 맞춰 한 쪽만 남기세요
-// 1) 라우트가 repo 루트의 src/ 아래라면:
+// 실제 구조가 backend/src/* 라면 이 4줄만 사용
 mount("/api/books", "src/books/book.route");
 mount("/api/orders", "src/orders/order.route");
 mount("/api/auth", "src/users/user.route");
 mount("/api/admin", "src/stats/admin.stats");
-
-// 2) 라우트가 functions/src/ 아래라면(위 4줄 대신 아래 4줄 사용):
-// mount("/api/books",  "functions/src/books/book.route");
-// mount("/api/orders", "functions/src/orders/order.route");
-// mount("/api/auth",   "functions/src/users/user.route");
-// mount("/api/admin",  "functions/src/stats/admin.stats");
 
 // 마지막 한 줄만 export
 module.exports = (req, res) => app(req, res);
