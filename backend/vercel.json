@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "backend/api/index.js": {
-      "runtime": "nodejs20.x",
-      "includeFiles": "backend/src/**"
-    }
-  }
+  "builds": [{ "src": "api/index.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/api/(.*)", "dest": "api/index.js" }]
 }
