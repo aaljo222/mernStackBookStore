@@ -34,7 +34,8 @@ app.options("*", cors(corsOptions));
 // 🔗 Mongo 연결(1회만)
 let mongoReady;
 async function ensureMongo() {
-  if (!mongoReady) mongoReady = mongoose.connect(process.env.DB_URL);
+  if (!mongoReady) mongoReady = mongoose.connect(process.env.DB_URL);\
+  console.log("db 연결완료")
   return mongoReady;
 }
 app.use(async (_req, _res, next) => {
@@ -43,10 +44,17 @@ app.use(async (_req, _res, next) => {
 });
 
 // 📦 라우트
-app.use("/api/books", require("./src/books/book.route"));
-app.use("/api/orders", require("./src/orders/order.route"));
-app.use("/api/auth", require("./src/users/user.route"));
-app.use("/api/admin", require("./src/stats/admin.stats"));
+const path = require("path");
+app.use("/api/books", require(path.join(__dirname, "../src/books/book.route")));
+app.use(
+  "/api/orders",
+  require(path.join(__dirname, "../src/orders/order.route"))
+);
+app.use("/api/auth", require(path.join(__dirname, "../src/users/user.route")));
+app.use(
+  "/api/admin",
+  require(path.join(__dirname, "../src/stats/admin.stats"))
+);
 
 // 헬스체크
 app.get("/api/health", (_req, res) => res.send("ok"));
