@@ -1,0 +1,12 @@
+{
+  "name": "mern-stack-book-store",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev:front": "npm --workspace frontend run dev",
+    "dev:back": "npm --workspace backend run dev",
+    "build": "npm -ws run build",
+    "build:front": "npm --workspace frontend run build",
+    "start:back": "npm --workspace backend run start"
+  }
+}

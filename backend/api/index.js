@@ -1,56 +1,50 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { connect } = require("../src/lib/db"); // ★ 추가
+const { connect } = require("../src/lib/db");
 
-// 몽고 연결(콜드스타트 때 1회 실행)
+// DB 연결 (콜드스타트 1회)
 connect()
-  .then(() => {
-    console.log("✅ MongoDB connected");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connect error:", err);
-  });
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connect error:", err));
 
 const app = express();
+app.disable("X-Powered-By");
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
-function isAllowed(origin) {
-  if (!origin) return true;
-  try {
-    const u = new URL(origin);
-    if (u.origin === "http://localhost:5173") return true;
-    if (u.origin === "https://mern-book-frontend-roan.vercel.app") return true; // 프로덕션
-    if (
-      u.hostname.startsWith("mern-book-frontend-") &&
-      u.hostname.endsWith(".vercel.app")
-    )
-      return true; // 프리뷰
-    return false;
-  } catch {
-    return false;
-  }
-}
 
-const corsOptions = {
-  origin: (origin, cb) =>
-    isAllowed(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS")),
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400,
+/** 같은 도메인(프론트와 백엔드가 한 프로젝트)이면
+ *  프런트에서 /api 상대경로만 쓰면 CORS가 필요 없습니다.
+ *  로컬 개발용으로만 CORS를 허용하고, 배포에선 생략해도 됩니다.
+ */
+const ALLOW_LOCAL = "http://localhost:5173";
+const corsDelegate = (req, cb) => {
+  const origin = req.header("Origin");
+  const allow = !origin || origin === ALLOW_LOCAL; // 배포는 same-origin이므로 필요 X
+  cb(null, {
+    origin: allow,
+    credentials: true,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    optionsSuccessStatus: 204,
+  });
 };
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.use(cors(corsDelegate));
+app.options("*", cors(corsDelegate));
 
-// ---- Health 가장 위쪽에 ----
-app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
+// Health
+app.get("/health", (_req, res) =>
+  res.status(200).json({ ok: true, ts: Date.now() })
+);
 
-// ---- 라우터 마운트(backend 기준 상대경로) ----
-app.use("/api/auth", require("../src/users/user.route"));
-app.use("/api/books", require("../src/books/book.route"));
-app.use("/api/orders", require("../src/orders/order.route"));
-app.use("/api/admin", require("../src/stats/admin.stats"));
+// 라우트 (여기엔 /api 붙이지 마세요!)
+app.use("/auth", require("../src/users/user.route"));
+app.use("/books", require("../src/books/book.route"));
+app.use("/orders", require("../src/orders/order.route"));
+app.use("/admin", require("../src/stats/admin.stats"));
 
-// ---- Vercel 핸들러 ----
-module.exports = (req, res) => app(req, res);
+app.use((_req, res) => res.status(404).json({ error: "NOT_FOUND" }));
+
+// Vercel용 export
+module.exports = app;
