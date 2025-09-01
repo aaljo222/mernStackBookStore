@@ -2,7 +2,9 @@
   "name": "backend",
   "private": true,
   "version": "1.0.0",
-  "engines": { "node": "18.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js"
