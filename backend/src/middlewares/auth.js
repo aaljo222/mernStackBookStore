@@ -5,7 +5,7 @@ async function requireAuth(req, res, next) {
   const token = h.startsWith("Bearer ") ? h.slice(7) : null;
   if (!token) return res.status(401).json({ error: "no_token" });
   try {
-    const decoded = await verify(token, process.env.JWT_SECRET);
+    const decoded = await verify(token, process.env.JWT_SECRET_KEY);
     req.user = decoded; // { id, email, role }
     next();
   } catch {
