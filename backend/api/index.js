@@ -27,7 +27,12 @@ const corsDelegate = (req, cb) => {
 };
 app.use(cors(corsDelegate));
 app.options("*", cors(corsDelegate));
-
+// ✅ 추가: /api 프리픽스가 붙어오면 떼고 라우팅
+app.use((req, _res, next) => {
+  if (req.url.startsWith("/api/")) req.url = req.url.slice(4); // '/api' 제거
+  else if (req.url === "/api") req.url = "/"; // '/api' 단독일 때
+  next();
+});
 // ✅ 헬스체크
 app.get("/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 app.get("/health/db", async (_req, res, next) => {
