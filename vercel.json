@@ -6,15 +6,16 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     },
-    {
-      "src": "backend/api/index.js",
-      "use": "@vercel/node"
-    }
+    { "src": "backend/api/index.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "backend/api/index.js" },
+    { "src": "^/api/(.*)$", "dest": "backend/api/index.js" },
+
+    { "src": "^/assets/(.*)$", "dest": "/frontend/assets/$1" },
+    { "src": "^/favicon\\.ico$", "dest": "/frontend/favicon.ico" },
 
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+
+    { "src": "/(.*)", "dest": "/frontend/index.html" }
   ]
 }
