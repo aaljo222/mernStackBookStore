@@ -1,33 +1,22 @@
-// models/User.js
+// backend/src/models/User.js (요약 예시)
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: { type: String, required: true, minlength: 8 },
-    name: { type: String, default: "" },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
-  },
-  { timestamps: true }
-);
+const schema = new mongoose.Schema({
+  email: { type: String, unique: true, required: true, index: true },
+  password: { type: String, required: true },
+  name: String,
+  role: { type: String, default: "user" },
+});
 
-// 저장 전 비밀번호 해싱
-userSchema.pre("save", async function (next) {
+schema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-userSchema.methods.comparePassword = function (plain) {
+schema.methods.comparePassword = function (plain) {
   return bcrypt.compare(plain, this.password);
 };
 
-module.exports = mongoose.models.User || mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", schema);
