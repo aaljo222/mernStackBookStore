@@ -10,6 +10,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("여기는 App");
     const timer = setTimeout(() => {
       setLoading(false);
     }, 2000);

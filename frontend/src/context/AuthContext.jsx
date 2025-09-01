@@ -5,6 +5,7 @@ import api from "../lib/api";
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  console.log("여기는 들어오겠지");
   const [user, setUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("user"));
