@@ -4,36 +4,49 @@ import "./App.css";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
 import Navbar from "./components/Navbar";
-import { AuthProvider } from "./context/AuthContext";
 
-function App() {
-  const [loading, setLoading] = useState(true);
-
+// 라우트 전환 시 스크롤 상단
+function ScrollToTopOnRoute() {
   useEffect(() => {
-    console.log("여기는 App");
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-
-    // Cleanup timer
-    return () => clearTimeout(timer);
+    const handler = () => window.scrollTo({ top: 0, behavior: "instant" });
+    window.addEventListener("hashchange", handler, { passive: true });
+    return () => window.removeEventListener("hashchange", handler);
   }, []);
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  return (
-    <>
-      <AuthProvider>
-        <Navbar />
-        <main className="min-h-screen max-w-screen-2xl mx-auto px-4 py-6 font-primary">
-          <Outlet />
-        </main>
-        <Footer />
-      </AuthProvider>
-    </>
-  );
+  return null;
 }
 
-export default App;
+export default function App() {
+  // 짧은 지연 후 로더 표출(FOUC 방지)
+  const [showBootLoader, setShowBootLoader] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setShowBootLoader(false), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (showBootLoader) return <Loading />;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <ScrollToTopOnRoute />
+
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
+        <div className="max-w-screen-2xl mx-auto px-4">
+          <Navbar />
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="max-w-screen-2xl mx-auto px-4 py-8 font-primary">
+        <Outlet />
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t bg-white">
+        <div className="max-w-screen-2xl mx-auto px-4">
+          <Footer />
+        </div>
+      </footer>
+    </div>
+  );
+}

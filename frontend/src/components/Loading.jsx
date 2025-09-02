@@ -1,11 +1,12 @@
-import React from 'react';
-
-const Loading = () => {
+export default function Loading() {
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid"></div>
+    <div className="grid place-items-center min-h-screen bg-white">
+      <div className="flex items-center gap-3">
+        <span className="inline-block h-3 w-3 rounded-full bg-gray-900 animate-bounce [animation-delay:-0.2s]" />
+        <span className="inline-block h-3 w-3 rounded-full bg-gray-900 animate-bounce [animation-delay:-0.1s]" />
+        <span className="inline-block h-3 w-3 rounded-full bg-gray-900 animate-bounce" />
+        <p className="ml-3 text-gray-700">Loading…</p>
+      </div>
     </div>
   );
-};
-
-export default Loading;
+}
