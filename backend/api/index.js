@@ -77,13 +77,12 @@ app.use((err, _req, res, _next) => {
   });
 });
 
- module.exports = async (req, res) => {
+module.exports = async (req, res) => {
   try {
-   await connect();           // 콜드스타트에서 1회 실제 연결
-   return app(req, res);      // express 핸들링
- } catch (e) {
-    console.error("DB connect error:", e);
-    res.status(500).json({ error: "db_connect_failed", message: e.message });
- }
- };
-
+    await connect();
+    return app(req, res);
+  } catch (e) {
+    console.error("❌ DB connect error:", e?.message, e?.stack);
+    res.status(500).json({ error: "db_connect_failed", message: e?.message });
+  }
+};

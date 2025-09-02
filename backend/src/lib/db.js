@@ -2,24 +2,26 @@
 const mongoose = require("mongoose");
 const { MONGODB_URI } = require("../utils/env");
 
-let cached = global.__mongoose;
-if (!cached) cached = global.__mongoose = { conn: null, promise: null };
+// serverless 환경에서 연결 캐시
+let _cached = global._mongoose;
+if (!_cached) _cached = global._mongoose = { conn: null, promise: null };
 
 async function connect() {
-  if (cached.conn) return cached.conn;
-  if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(MONGODB_URI, { bufferCommands: false })
-      .then((m) => {
-        console.log("✅ Mongo connected");
-        return m;
+  if (_cached.conn) return _cached.conn;
+
+  if (!_cached.promise) {
+    if (!MONGODB_URI) throw new Error("MONGODB_URI is not set");
+    _cached.promise = mongoose
+      .connect(MONGODB_URI, {
+        maxPoolSize: 5,
+        serverSelectionTimeoutMS: 15000,
+        // tls/ssl이 필요한 Atlas의 기본 URI면 옵션 없이도 연결됩니다.
       })
-      .catch((e) => {
-        console.error("❌ Mongo connect failed:", e);
-        throw e;
-      });
+      .then((m) => m.connection);
   }
-  cached.conn = await cached.promise;
-  return cached.conn;
+
+  _cached.conn = await _cached.promise;
+  return _cached.conn;
 }
+
 module.exports = { connect };
