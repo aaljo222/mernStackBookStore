@@ -1,50 +1,28 @@
-// src/context/AuthContext.jsx
+// src/context/AuthContext.jsx (핵심만)
 import { createContext, useContext, useEffect, useState } from "react";
-import api from "../lib/api";
+import { onAuthStateChanged, setPersistence, browserLocalPersistence, getAuth } from "firebase/auth";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  console.log("여기는 들어오겠지");
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user"));
-    } catch {
-      return null;
-    }
-  });
+  const auth = getAuth();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 회원가입
-  const registerUser = async (email, password) => {
-    const { data } = await api.post("/auth/register", { email, password });
-    // 백엔드가 { user, accessToken } 형태로 준다고 가정
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("token", data.accessToken);
-    setUser(data.user);
-  };
-
-  // 로그인
-  const loginUser = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("token", data.accessToken);
-    setUser(data.user);
-  };
-
-  // 로그아웃
-  const logout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
-  };
-
-  // 토큰 만료 등 처리(선택)
   useEffect(() => {
-    // 필요시 /auth/me 같은 헬스 호출로 세션 확인
-  }, []);
+    // 브라우저 로컬영속성
+    setPersistence(auth, browserLocalPersistence).then(() => {
+      return onAuthStateChanged(auth, (user) => {
+        setCurrentUser(user || null);
+        setLoading(false);
+      });
+    });
+  }, [auth]);
+
+  const logout = () => auth.signOut();
 
   return (
-    <AuthContext.Provider value={{ user, registerUser, loginUser, logout }}>
+    <AuthContext.Provider value={{ currentUser, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
