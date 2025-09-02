@@ -63,14 +63,14 @@ const Navbar = () => {
         <div className="relative flex items-center md:space-x-3 space-x-2">
           <div>
             {/* 1) 일반 사용자: 아바타 + 드롭다운 */}
-            {currentUser ? (
+            {user ? (
               <>
                 <button onClick={() => setIsDropdownOpen((v) => !v)}>
                   <img
                     src={avatarImg}
                     alt=""
                     className={`size-7 rounded-full ${
-                      currentUser ? "ring-2 ring-blue-500" : ""
+                      user ? "ring-2 ring-blue-500" : ""
                     }`}
                   />
                 </button>

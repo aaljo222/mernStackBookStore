@@ -15,7 +15,7 @@ const CheckoutPage = () => {
   );
   const totalPriceDisplay = total.toFixed(2);
 
-  const { user } = useAuth(); // ← currentUser → user 로 통일
+  const { user } = useAuth(); // ←  user 로 통일
   const navigate = useNavigate();
 
   const {
