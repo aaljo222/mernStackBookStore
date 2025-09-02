@@ -1,18 +1,22 @@
-import React from 'react'
-import { useAuth } from '../context/AuthContext'
-import { Navigate } from 'react-router-dom'
+// src/routes/PrivateRoute.jsx
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import jwtDecode from "jwt-decode";
 
-const PrivateRoute = ({children}) => {
-    const {currentUser, loading} = useAuth();
-
-    if(loading) {
-        return <div>Loading..</div>
-    }
-    if(currentUser) {
-        return children;
-    }
-  
-    return <Navigate to="/login" replace/>
+function hasValidToken() {
+  const t = localStorage.getItem("token");
+  if (!t) return false;
+  try {
+    const p = jwtDecode(t);
+    return !p?.exp || p.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
 }
 
-export default PrivateRoute
+const PrivateRoute = ({ children }) => {
+  if (!hasValidToken()) return <Navigate to="/login" replace />;
+  return children ? children : <Outlet />;
+};
+
+export default PrivateRoute;
