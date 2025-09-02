@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode"; // ✅ default import
 import { useState } from "react";
 import { HiOutlineUser } from "react-icons/hi";
 import {
@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 import avatarImg from "../assets/avatar.png";
+import { useAuth } from "../context/AuthContext"; // ✅ 추가
 
 const userNavigation = [
   { name: "Dashboard", href: "/user-dashboard" },
@@ -36,8 +37,16 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const cartItems = useSelector((state) => state.cart.cartItems);
 
+  // ✅ AuthContext에서 현재 사용자/로그아웃 함수 가져오기
+  const { user, logout } = useAuth();
+
   // 관리자 토큰(JWT)
   const { isAdmin } = getAdminFromToken();
+
+  const handleLogOut = () => {
+    logout();
+    setIsDropdownOpen(false);
+  };
 
   return (
     <header className="max-w-screen-2xl mx-auto px-4 py-6">
