@@ -10,17 +10,18 @@ const {
 
 // router.use(cookieParser());
 
-// 회원가입
+// backend/src/users/user.route.js (register 부분만 보완)
 router.post("/register", async (req, res) => {
   try {
     const { email, password, name } = req.body || {};
     if (!email || !password)
       return res.status(400).json({ error: "missing_fields" });
+    if (password.length < 8)
+      return res.status(400).json({ error: "password_too_short" });
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(409).json({ error: "email_exists" });
 
-    // ⚠️ User 모델에 pre('save')로 비밀번호 해시 또는 static method가 있어야 합니다.
     const user = await User.create({ email, password, name });
 
     const accessToken = signAccess({

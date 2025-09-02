@@ -1,3 +1,4 @@
+// backend/src/orders/order.route.js
 const router = require("express").Router();
 const Order = require("../models/Order");
 const { requireAuth, requireRole } = require("../middlewares/auth");
@@ -25,7 +26,14 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
-// 내 주문
+// ✅ 프런트에서 쓰는 "이메일로 주문 조회"
+router.get("/email/:email", async (req, res) => {
+  const { email } = req.params;
+  const orders = await Order.find({ email }).sort({ createdAt: -1 });
+  res.json(orders);
+});
+
+// 내 주문(토큰 기반)
 router.get("/mine", requireAuth, async (req, res) => {
   const orders = await Order.find({ user: req.user.id }).sort({
     createdAt: -1,
