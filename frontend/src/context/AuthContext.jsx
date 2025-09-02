@@ -1,6 +1,5 @@
 // src/context/AuthContext.jsx (핵심만)
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, setPersistence, browserLocalPersistence, getAuth } from "firebase/auth";
 
 const AuthContext = createContext();
 
