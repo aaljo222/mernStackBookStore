@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import jwtDecode from "jwt-decode"; // ✅ default import
+import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
 import { HiOutlineUser } from "react-icons/hi";
 import {
