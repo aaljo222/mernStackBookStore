@@ -1,15 +1,14 @@
+// src/redux/features/books/booksApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import getBaseUrl from "../../../utils/baseURL";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: `${getBaseUrl()}/books`,
   credentials: "include",
-  prepareHeaders: (Headers) => {
+  prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
-    if (token) {
-      Headers.set("Authorization", `Bearer ${token}`);
-    }
-    return Headers;
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    return headers;
   },
 });
 
@@ -28,7 +27,7 @@ const booksApi = createApi({
     }),
     addBook: builder.mutation({
       query: (newBook) => ({
-        url: `/create-book`,
+        url: "/",
         method: "POST",
         body: newBook,
       }),
@@ -36,12 +35,9 @@ const booksApi = createApi({
     }),
     updateBook: builder.mutation({
       query: ({ id, ...rest }) => ({
-        url: `/edit/${id}`,
+        url: `/${id}`,
         method: "PUT",
         body: rest,
-        headers: {
-          "Content-Type": "application/json",
-        },
       }),
       invalidatesTags: ["Books"],
     }),
