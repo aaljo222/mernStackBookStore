@@ -1,5 +1,5 @@
-// 배포: same-origin '/api'
-// 로컬: vite proxy가 '/api'를 백엔드로 프록시
-const getBaseUrl = () => import.meta.env.VITE_API_URL || "/api";
-console.log(getBaseUrl);
-export default getBaseUrl;
+// frontend/src/utils/baseURL.ts
+export default function getBaseUrl() {
+  const isProd = typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app");
+  return isProd ? "/api" : "http://localhost:3000"; // dev 서버 포트 맞추기
+}
