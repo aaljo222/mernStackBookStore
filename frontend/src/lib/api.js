@@ -1,5 +1,7 @@
+// src/lib/api.ts (또는 api.js)
 import axios from "axios";
-const baseURL = import.meta.env.VITE_API_URL || "/api";
+
+const baseURL = import.meta.env.VITE_API_URL || "/api"; // 프로덕션은 '/api'
 
 const api = axios.create({
   baseURL,
