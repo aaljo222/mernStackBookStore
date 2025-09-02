@@ -19,13 +19,24 @@ const Register = () => {
 
   const onSubmit = async ({ email, password }) => {
     setMessage("");
+    // src/pages/Login/Register.jsx 혹은 Register 컴포넌트 submit 부분
     try {
-      await registerUser(email, password);
-      alert("User registered successfully!");
-      navigate("/"); // 회원가입 후 이동 경로 (원하면 "/login"으로 변경)
-    } catch (error) {
-      console.error(error);
-      setMessage("Please provide a valid email and password");
+      await registerUser(email, password, name);
+      alert("Register successful!");
+      navigate("/");
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 409) {
+        setMessage("This email is already registered. Try logging in.");
+      } else if (status === 400) {
+        setMessage(
+          err?.response?.data?.error === "password_too_short"
+            ? "Password must be at least 8 characters."
+            : "Missing or invalid fields."
+        );
+      } else {
+        setMessage("Something went wrong. Please try again.");
+      }
     }
   };
 
