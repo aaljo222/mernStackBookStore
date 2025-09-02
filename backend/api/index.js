@@ -2,49 +2,64 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { connect } = require("../src/lib/db");
 const mongoose = require("mongoose");
-const { JWT_SECRET } = require("../src/utils/env"); // 존재 여부 검증용
+const { connect } = require("../src/lib/db");
+const { JWT_SECRET } = require("../src/utils/env"); // 필수 env 검증 (없으면 여기서 throw)
 
-connect().catch(() => {}); // 콜드스타트 연결 시도(실패해도 라우트에서 재시도)
+// 콜드스타트 시 1회 연결 시도(실패해도 요청 시 재시도)
+connect().catch(() => {});
 
 const app = express();
-app.disable("X-Powered-By");
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
 
-// 로컬 개발만 CORS 허용(배포는 same-origin이라 불필요)
-const corsDelegate = (req, cb) => {
-  const origin = req.header("Origin");
-  cb(null, {
-    origin: !origin || origin === "http://localhost:5173",
+// ---------- CORS ----------
+const ALLOWLIST = new Set([
+  "http://localhost:5173",
+  "https://mern-stack-book-store-one.vercel.app", // prod
+]);
+function isAllowed(origin) {
+  if (!origin) return true; // same-origin 또는 서버 내부 호출
+  try {
+    const u = new URL(origin);
+    if (ALLOWLIST.has(u.origin)) return true;
+    // vercel preview 도메인 허용
+    if (u.hostname.endsWith(".vercel.app")) return true;
+  } catch {}
+  return false;
+}
+app.use(
+  cors({
+    origin: (origin, cb) => cb(null, isAllowed(origin)),
     credentials: true,
     methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     optionsSuccessStatus: 204,
-  });
-};
-app.use(cors(corsDelegate));
-app.options("*", cors(corsDelegate));
-// ✅ 추가: /api 프리픽스가 붙어오면 떼고 라우팅
+  })
+);
+app.options("*", cors());
+
+// ---------- '/api' 프리픽스 제거(프론트는 /api로 호출) ----------
 app.use((req, _res, next) => {
-  if (req.url.startsWith("/api/")) req.url = req.url.slice(4); // '/api' 제거
-  else if (req.url === "/api") req.url = "/"; // '/api' 단독일 때
+  if (req.url === "/api") req.url = "/";
+  else if (req.url.startsWith("/api/")) req.url = req.url.slice(4);
   next();
 });
-// ✅ 헬스체크
+
+// ---------- Health ----------
 app.get("/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 app.get("/health/db", async (_req, res, next) => {
   try {
     await connect();
-    res.json({ ok: true, state: mongoose.connection.readyState }); // 1/2 = 연결됨
+    res.json({ ok: true, state: mongoose.connection.readyState }); // 1/2 연결됨
   } catch (e) {
     next(e);
   }
 });
 
-// ✅ 실제 API (여기엔 /api 프리픽스 붙이지 마세요)
+// ---------- API ----------
 app.use("/auth", require("../src/users/user.route"));
 app.use("/books", require("../src/books/book.route"));
 app.use("/orders", require("../src/orders/order.route"));
@@ -53,12 +68,12 @@ app.use("/admin", require("../src/stats/admin.stats"));
 // 404
 app.use((_req, res) => res.status(404).json({ error: "NOT_FOUND" }));
 
-// ✅ 에러 핸들러(500 원인 확인용)
+// 에러 핸들러
 app.use((err, _req, res, _next) => {
   console.error("🚨 Unhandled error:", err);
   res.status(err.status || 500).json({
     error: "INTERNAL",
-    message: err.message,
+    message: err.message || "internal_error",
   });
 });
 
