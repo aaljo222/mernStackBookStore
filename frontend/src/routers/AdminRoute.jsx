@@ -1,7 +1,7 @@
 // src/routes/AdminRoute.jsx
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 function isAdminToken(token) {
   if (!token) return false;
