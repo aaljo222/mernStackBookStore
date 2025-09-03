@@ -55,12 +55,36 @@ router.post("/register", async (req, res) => {
 });
 
 // 로그인
+// backend/src/users/user.route.js  (login 부분만 교체/보강)
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body || {};
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password)))
-      return res.status(401).json({ error: "invalid_credentials" });
+    let { email, password } = req.body || {};
+    email = (email || "").trim().toLowerCase();
+    password = (password || "").trim();
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "missing_fields",
+        message: "Email and password are required",
+      });
+    }
+
+    // 비밀번호를 schema에서 select:false로 설정했을 가능성 방지
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(401).json({
+        error: "invalid_credentials",
+        message: "Email or password is incorrect",
+      });
+    }
+
+    const ok = await user.comparePassword(password);
+    if (!ok) {
+      return res.status(401).json({
+        error: "invalid_credentials",
+        message: "Email or password is incorrect",
+      });
+    }
 
     const accessToken = signAccess({
       id: user._id,

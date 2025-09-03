@@ -42,11 +42,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // 로그인
+  // src/context/AuthContext.jsx (loginUser만 교체)
   const loginUser = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    // { accessToken, user:{...} } 형태라고 가정
-    localStorage.setItem("token", data.accessToken);
-    setUser(decode(data.accessToken));
+    try {
+      const { data } = await api.post("/auth/login", { email, password });
+      localStorage.setItem("token", data.accessToken);
+      setUser(decode(data.accessToken));
+      return true;
+    } catch (err) {
+      // 서버에서 내려준 에러 메시지 노출
+      const msg = err?.response?.data?.message || "Login failed";
+      throw new Error(msg);
+    }
   };
 
   // 회원가입(필요 시)

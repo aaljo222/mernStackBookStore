@@ -15,12 +15,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     // password는 기본적으로 select에서 제외해 응답에 노출되지 않도록
-    password: {
-      type: String,
-      required: true,
-      select: false,
-      minlength: 6,
-    },
+    password: { type: String, required: true, select: true }, // ← select: true 로 보장
 
     name: { type: String, trim: true, default: "" },
 
