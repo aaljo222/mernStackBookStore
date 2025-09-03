@@ -26,9 +26,13 @@ const SingleBook = () => {
       <div className="">
         <div>
           <img
-            src={`${getImgUrl(book?.coverImage)}`}
-            alt={book?.title}
-            className="mb-8"
+            alt={product?.title || "Book cover"}
+            src={getImgUrl(product?.coverImage)}
+            className="h-full w-full object-cover object-center"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://via.placeholder.com/300x420.png?text=No+Image";
+            }}
           />
         </div>
 

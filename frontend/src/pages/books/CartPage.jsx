@@ -47,9 +47,13 @@ const CartPage = () => {
                     <li key={product?._id} className="flex py-6">
                       <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                         <img
-                          alt=""
-                          src={`${getImgUrl(product?.coverImage)}`}
+                          alt={product?.title || "Book cover"}
+                          src={getImgUrl(product?.coverImage)}
                           className="h-full w-full object-cover object-center"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://via.placeholder.com/300x420.png?text=No+Image";
+                          }}
                         />
                       </div>
 
