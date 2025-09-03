@@ -1,13 +1,9 @@
 import { useAuth } from "../../../context/AuthContext";
-import { useGetOrderByEmailQuery } from "../../../redux/features/orders/ordersApi";
+import { useGetMyOrdersQuery } from "../../../redux/features/orders/ordersApi";
 
 const UserDashboard = () => {
   const { user } = useAuth();
-  const {
-    data: orders = [],
-    isLoading,
-    isError,
-  } = useGetOrderByEmailQuery(user?.email);
+  const { data: orders = [], isLoading, isError } = useGetMyOrdersQuery();
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error getting orders data</div>;
