@@ -20,7 +20,7 @@ const BookCard = ({ book }) => {
           <Link to={`/books/${book._id}`}>
             <img
               alt={product?.title || "Book cover"}
-              src={getImgUrl(product?.coverImage)}
+              src={getImgUrl(book?.coverImage)}
               className="h-full w-full object-cover object-center"
               onError={(e) => {
                 e.currentTarget.src =

@@ -27,7 +27,7 @@ const SingleBook = () => {
         <div>
           <img
             alt={product?.title || "Book cover"}
-            src={getImgUrl(product?.coverImage)}
+            src={getImgUrl(book?.coverImage)}
             className="h-full w-full object-cover object-center"
             onError={(e) => {
               e.currentTarget.src =
