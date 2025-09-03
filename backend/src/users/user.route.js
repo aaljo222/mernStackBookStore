@@ -55,35 +55,20 @@ router.post("/register", async (req, res) => {
 });
 
 // 로그인
-// backend/src/users/user.route.js  (login 부분만 교체/보강)
+// backend/src/users/user.route.js (login 부분만)
 router.post("/login", async (req, res) => {
   try {
-    let { email, password } = req.body || {};
-    email = (email || "").trim().toLowerCase();
-    password = (password || "").trim();
-
-    if (!email || !password) {
-      return res.status(400).json({
-        error: "missing_fields",
-        message: "Email and password are required",
-      });
-    }
-
-    // 비밀번호를 schema에서 select:false로 설정했을 가능성 방지
-    const user = await User.findOne({ email }).select("+password");
-    if (!user) {
-      return res.status(401).json({
-        error: "invalid_credentials",
-        message: "Email or password is incorrect",
-      });
-    }
+    const { email, password } = req.body || {};
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ error: "invalid_credentials" });
 
     const ok = await user.comparePassword(password);
-    if (!ok) {
-      return res.status(401).json({
-        error: "invalid_credentials",
-        message: "Email or password is incorrect",
-      });
+    if (!ok) return res.status(401).json({ error: "invalid_credentials" });
+
+    // 레거시(평문)였다면 여기서 해시로 업그레이드
+    if (!user.password.startsWith("$2")) {
+      user.password = password; // pre('save')에서 해시됨
+      await user.save();
     }
 
     const accessToken = signAccess({
@@ -92,7 +77,6 @@ router.post("/login", async (req, res) => {
       role: user.role,
     });
     const refresh = signRefresh({ id: user._id });
-
     res.cookie("refresh", refresh, {
       httpOnly: true,
       secure: true,
