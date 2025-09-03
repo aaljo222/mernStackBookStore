@@ -14,10 +14,10 @@ const Register = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    defaultValues: { email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "" },
   });
 
-  const onSubmit = async ({ email, password }) => {
+  const onSubmit = async ({ name, email, password }) => {
     setMessage("");
     // src/pages/Login/Register.jsx 혹은 Register 컴포넌트 submit 부분
     try {
@@ -46,6 +46,24 @@ const Register = () => {
         <h2 className="text-xl font-semibold mb-4">Please Register</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          {/* Name */}
+          <div className="mb-4">
+            <label
+              htmlFor="name"
+              className="block text-gray-700 text-sm font-bold mb-2"
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              className="shadow appearance-none border rounded w-full py-2 px-3"
+              {...register("name", { required: "Name is required" })}
+            />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+            )}
+          </div>
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
