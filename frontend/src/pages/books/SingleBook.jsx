@@ -26,7 +26,7 @@ const SingleBook = () => {
       <div className="">
         <div>
           <img
-            alt={product?.title || "Book cover"}
+            alt={book?.title || "Book cover"}
             src={getImgUrl(book?.coverImage)}
             className="h-full w-full object-cover object-center"
             onError={(e) => {

@@ -19,7 +19,7 @@ const BookCard = ({ book }) => {
         <div className="sm:h-72 sm:flex-shrink-0 border rounded-md">
           <Link to={`/books/${book._id}`}>
             <img
-              alt={product?.title || "Book cover"}
+              alt={book?.title || "Book cover"}
               src={getImgUrl(book?.coverImage)}
               className="h-full w-full object-cover object-center"
               onError={(e) => {
