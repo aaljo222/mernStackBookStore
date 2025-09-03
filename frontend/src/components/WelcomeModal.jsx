@@ -47,9 +47,10 @@ export default function WelcomeModal({ open, onClose }) {
           안되어 local에서 되었는데 결국 backend의 외부 db를 사용하는것은 유로
           결재가 필요하여 vercel에서 처음에는 backend와 frontend 2개의
           프로젝트를 생성하고 접근하려고 했는데 cors 에 막혀서 결국 하나의
-          프로젝트를 통해 구현하였습니다. 이런 삽질의 과정을 통해 시스템을
-          이해하게 되고 경험은 하나 하나 쌓입니다. 코딩과 개발 실력을 키우셔서
-          향후 AI를 잘활용하여 본인의 역량을 극대화하세요
+          프로젝트를 통해 구현하였습니다. 일요일 하루 종일 삽질하면서
+          고통스러웠지만 이런 삽질의 과정을 통해 시스템을 이해하게 되고 경험은
+          하나 하나 쌓입니다. 코딩과 개발 실력을 키우셔서 향후 AI를 잘활용하여
+          본인의 역량을 극대화하세요
         </p>
 
         <div className="flex items-center justify-between gap-2">
