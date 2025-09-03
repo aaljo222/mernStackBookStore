@@ -14,7 +14,9 @@ import { Link } from "react-router-dom";
 import avatarImg from "../assets/avatar.png";
 import { useAuth } from "../context/AuthContext"; // ✅ 추가
 
+// src/components/Navbar.jsx (상단)
 const userNavigation = [
+  { name: "Books", href: "/" }, // ✅ 추가
   { name: "Dashboard", href: "/user-dashboard" },
   { name: "Orders", href: "/orders" },
   { name: "Cart Page", href: "/cart" },
@@ -67,7 +69,13 @@ const Navbar = () => {
             />
           </div>
         </div>
-
+        {/* ✅ 항상 보이는 Books 링크 */}
+        <Link
+          to="/"
+          className="hidden sm:inline-flex text-sm font-medium hover:underline"
+        >
+          Books
+        </Link>
         {/* right */}
         <div className="relative flex items-center md:space-x-3 space-x-2">
           <div>

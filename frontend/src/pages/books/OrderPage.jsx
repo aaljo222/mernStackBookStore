@@ -1,16 +1,15 @@
+// src/pages/books/OrderPage.jsx
 import { useAuth } from "../../context/AuthContext";
-import { useGetOrderByEmailQuery } from "../../redux/features/orders/ordersApi";
+import { useGetMyOrdersQuery } from "../../redux/features/orders/ordersApi";
 
 const OrderPage = () => {
   const { user } = useAuth();
+  const { data: orders = [], isLoading, isError } = useGetMyOrdersQuery(); // ✅ 파라미터 없음
 
-  const {
-    data: orders = [],
-    isLoading,
-    isError,
-  } = useGetOrderByEmailQuery(user.email);
+  if (!user) return <div>Please login</div>;
   if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error geting orders data</div>;
+  if (isError) return <div>Error getting orders data</div>;
+
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-2xl font-semibold mb-4">Your Orders</h2>
@@ -27,19 +26,32 @@ const OrderPage = () => {
               <p className="text-gray-600">Name: {order.name}</p>
               <p className="text-gray-600">Email: {order.email}</p>
               <p className="text-gray-600">Phone: {order.phone}</p>
-              <p className="text-gray-600">Total Price: ${order.totalPrice}</p>
-              <h3 className="font-semibold mt-2">Address:</h3>
-              <p>
-                {" "}
-                {order.address.city}, {order.address.state},{" "}
-                {order.address.country}, {order.address.zipcode}
+              <p className="text-gray-600">
+                Total Price: ${Number(order.totalPrice || 0).toFixed(2)}
               </p>
-              <h3 className="font-semibold mt-2">Products Id:</h3>
-              <ul>
-                {order.productIds.map((productId) => (
-                  <li key={productId}>{productId}</li>
-                ))}
-              </ul>
+
+              {order.address && (
+                <>
+                  <h3 className="font-semibold mt-2">Address:</h3>
+                  <p>
+                    {order.address.street ? `${order.address.street}, ` : ""}
+                    {order.address.city}, {order.address.state},{" "}
+                    {order.address.country}, {order.address.zipcode}
+                  </p>
+                </>
+              )}
+
+              {Array.isArray(order.productIds) &&
+                order.productIds.length > 0 && (
+                  <>
+                    <h3 className="font-semibold mt-2">Products Id:</h3>
+                    <ul>
+                      {order.productIds.map((pid) => (
+                        <li key={pid}>{pid}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
             </div>
           ))}
         </div>

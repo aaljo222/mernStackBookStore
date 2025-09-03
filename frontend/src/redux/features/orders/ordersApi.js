@@ -2,19 +2,17 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import getBaseUrl from "../../../utils/baseURL";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: `${getBaseUrl()}/orders`,
-  credentials: "include",
-  prepareHeaders: (headers) => {
-    const token = localStorage.getItem("token");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-    return headers;
-  },
-});
-
 const ordersApi = createApi({
   reducerPath: "ordersApi",
-  baseQuery,
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${getBaseUrl()}/orders`,
+    credentials: "include",
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem("token");
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+      return headers;
+    },
+  }),
   tagTypes: ["Orders"],
   endpoints: (builder) => ({
     createOrder: builder.mutation({
@@ -25,12 +23,14 @@ const ordersApi = createApi({
       }),
       invalidatesTags: ["Orders"],
     }),
-    getOrderByEmail: builder.query({
-      query: (email) => ({ url: `/email/${encodeURIComponent(email)}` }),
+
+    // ✅ 이메일이 아니라 토큰으로 서버가 사용자 식별
+    getMyOrders: builder.query({
+      query: () => ({ url: "/mine" }),
       providesTags: ["Orders"],
     }),
   }),
 });
 
-export const { useCreateOrderMutation, useGetOrderByEmailQuery } = ordersApi;
+export const { useCreateOrderMutation, useGetMyOrdersQuery } = ordersApi;
 export default ordersApi;
